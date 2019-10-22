@@ -1,0 +1,82 @@
+# import_patterns.spt
+# Imports patterns for Che Man
+
+# This is a mkts.exe script file
+# Needs mkts v0.8.0 20180205
+
+# Bank 0 (patterns for bg)
+
+# Font
+OPEN font.png
+PALS palts0.png
+CHARSET 0, 0, 32, 2
+
+# Hud
+OPEN hud.png
+PALS palts0.png
+LABEL tsdummy0
+MAPFILE ..\dev\work\dummy0.h
+MAPPED 0, 0, 2, 2, 16, 15
+
+# Title
+OPEN title.png
+PALS paltscuts.png
+LABEL tsdummy1
+MAPFILE ..\dev\work\dummy1.h
+MAPPED 0, 0, 2, 2, 16, 15
+
+# Ending
+OPEN ending.png
+PALS paltscuts.png
+LABEL tsdummy2
+MAPFILE ..\dev\work\dummy2.h
+MAPPED 0, 0, 2, 2, 16, 15
+
+# Tilesets are generated as tilemaps. They will be stored in this file:
+MAPFILE ..\dev\assets\tiledata.h
+
+# ts0
+OPEN ts0.png
+PALS palts0.png
+LABEL ts0
+MAPPED 0, 0, 2, 2, 8, 6, 41
+
+# ts1
+OPEN ts1.png
+PALS palts1.png
+LABEL ts1
+MAPPED 0, 0, 2, 2, 8, 6, 41
+
+# Done with patterns for bg. Reset and fill with zeroes:
+RESETPOOL
+FILL 4096
+
+# Bank 1 (patterns for spr)
+
+# All sprites are in the same file, and use the same palette
+OPEN ss0.png
+PALS palss0.png
+
+# Bits
+CHARSET 0, 15, 1, 1
+
+# Metasprites will be stored in this file:
+MAPFILE ..\dev\assets\spritedata.h
+
+# Main player
+LABEL sspl
+METASPRITESET 0, 0, 2, 3, 6, 1, -4, -8 FLIPPED
+
+ #Enemies
+LABEL ssen
+METASPRITESET 0, 3, 2, 3, 6, 1, 0, -8 FLIPPED
+
+# Platforms
+LABEL ssplat
+METASPRITE 12, 4, 2, 2, 0, 0
+
+# Items / special
+LABEL ssit
+METASPRITESET 0, 6, 2, 2, 6, 1, 0, 0
+
+FILL 8192

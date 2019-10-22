@@ -1,0 +1,187 @@
+; loadercpc_new.asm-orig
+; Contains code by Antonio Villena and CNGSoft
+; thanks Fran Gallego and Augusto Ruiz for your time and patience.
+
+; This code will be placed in the BASIC stack. It will disable
+; interruptions and ROMs. Then it will:
+; - LOAD a ZX7 binary block at $6400
+; - Decompress to $C000 (main screen)
+; - LOAD a ZX7 binary block at $6400
+; - Decompress to $C000 (main screen)
+; - LOAD a ZX7 binary block to $100
+; - Decompress to $400
+; - LOAD a finary block to %%%arkos_addr%%%
+; - Jump to $400
+
+org $BF00
+
+
+; IX=^OFFSET,DE=LENGTH; IX+++,DE---,H=$FF?,ABCLF!,CF=OK?
+   di                ;; Disable interrupts before starting
+
+   ld    bc, $F610 ;; F6 = PIO Port C (0x10 for cassete start)
+   out  (c), c       ;; Cassette start
+
+   ;; Function requires 7F (Gate Array port) at B'
+   ;; This is guaranteed if this is called from BASIC, but not otherwise
+   exx               ;; 
+   push  bc          ;; Save BC' value before changing it (it will be restored at the end)
+   ld    bc, $7F10 ;; B = Gate array port (0x7F), C=Border Register (0x10)
+   out  (c), c       ;; Select border register for later color changes
+   exx               ;;
+
+init: 
+   ld     h, #0      ;; H will hold the CRC
+
+   ;; Identify pilot Tone
+tone: 
+   call  full        ;; Read 1 pulse
+   jr    nc, init    ;; Is it too long?
+   sub    b
+   jr    nc, init    ;; Is it too long?
+   inc    h
+   jr    nz, tone    ;; valid TONE
+
+   ;; Wait for sync signal
+wait: 
+   ld     h, #-2
+sync: 
+   call  full        ;; Read 1 pulse
+   jr    nc, init    ;; Is it too long?
+   sub    b
+   jr     c, wait    ;; If it belongs to Tone, continue waiting
+   inc    h
+   jr    nz, sync    ;; valid SYNC signal
+   jr    byte
+
+;;------------------------------------------------------------------------------------
+;; Helper routines for reading pulses
+;; 
+
+full: 
+   ld     b, #2-64   ;; *!* to measure 1 pulse
+half: 
+   ld     a, #16-2   ;; safety delay
+secdelay:
+   dec    a
+   jr    nz, secdelay
+edge: 
+   inc    b
+   ret    z
+   ld     a, $F5   ;; Read 1 bit from tape
+   in     a, (0)     ;;
+   xor    c
+   and   $80
+   jr     z, edge
+   xor    c
+   ld     c, a
+   
+   ;; Set new random border colour
+   exx               ;; use B' = 0x7F to send data to the Gate Array
+   ld     a, r       ;; read R to get some randomness
+   or    $40       ;; Add this bit for colour commands (hardware values)
+   and    b          ;; Remove upper bit doing and with 0x7F (unrequired bit)
+   out  (c), a       ;; set random border colour
+   exx
+   
+   ld     a, #2-48   ;; *!* intermediate pulse value
+   scf
+   ret
+;;------------------------------------------------------------------------------------
+;;------------------------------------------------------------------------------------
+
+
+next: 
+   ld  (ix), l       ;; Store last read byte
+   inc   ix          ;; IN++ : Point to next memory location where to store a byte
+   dec   de          ;; DE-- : One less byte to be read
+byte: 
+   ld     l, #1      ;; L will be shifted left with each new bit read. Use this first bit
+                     ;; to know when 8 bits have been read (a carry will be produced)
+bits: 
+   ld     b, #1-80   ;; *!* value to measure 2 pulses
+   call  half        ;; Read half pulse
+   call   c, half    ;; Read another half pulse if first was right
+   jr    nc, exit    ;; On error, exit (L != 0 in this case, that will be the error code)
+   sub    b
+   rl     l          ;; Insert last bit read into the next byte being read
+   jr    nc, bits    ;; Continue reading bits until the byte is full (Carry will appear)
+   
+   ld     a, h       ;; A = present CRC
+   xor    l          ;; XOR CRC with last read byte
+   ld     h, a       ;; Store new CRC value
+   
+   ld     a, d       ;; Check if we have read all the bytes
+   or     e          ;; then remaining bytes (DE) will be 0
+   jr    nz, next    ;; If DE != 0, continue reading next byte
+   ;; Calculate final error status depending on the CRC
+   inc    a          ;; | Final error status. If load was successful A=0, H=255. Then, these 
+   add    h          ;; | 2 instructions will produce Carry, signaling everything went OK.
+
+   ld     l, a       ;; Success loading. Return L=0 (No error). A=0 when no error happened
+exit:
+   exx               ;; 
+   ld    bc, $F600 ;; F6 = PIO Port C (0x00 for cassette stop)
+   out  (c), c       ;; Cassette stop
+   pop   bc          ;; Restore BC' before ending (Leave alternate register set as it was)
+   exx               ;;
+   ei                ;; Enable interrupts again
+   
+;; Return instruction provided by bindings
+
+
+
+; -----------------------------------------------------------------------------
+; ZX7 Backwards by Einar Saukas, Antonio Villena
+; "Standard" version (64 bytes only)
+; -----------------------------------------------------------------------------
+; Parameters:
+;   HL: source address (compressed data)
+;   DE: destination address (decompressing)
+; -----------------------------------------------------------------------------
+dzx7:   ld      bc, $8000       ; marker bit at MSB of B
+        ld      a, b            ; move marker bit to A
+copyby: inc     c               ; to keep BC value after LDD
+        ldd                     ; copy literal byte
+mainlo: call    getbit          ; read next bit
+        jr      nc, copyby      ; next bit indicates either literal or sequence
+
+; determine number of bits used for length (Elias gamma coding)
+        push    de              ; store destination on stack
+        ld      d, c            ; D= 0, assume BC=$0000 here (or $8000)
+lenval: call    nc, getbit      ; don't call first time (to save bytes)
+        rl      c
+        rl      b               ; insert bit on BC
+        call    getbit          ; more bits?
+        jr      nc, lenval      ; repeat, final length on BC
+
+; check escape sequence
+        inc     c               ; detect escape sequence
+        jr      z, exitdz       ; end of algorithm
+
+; determine offset
+        ld      e, (hl)         ; load offset flag (1 bit) + offset value (7 bits)
+        dec     hl
+        sll     e
+        jr      nc, offend      ; if offset flag is set, load 4 extra bits
+        ld      d, $10          ; bit marker to load 4 bits
+nexbit: call    getbit
+        rl      d               ; insert next bit into D
+        jr      nc, nexbit      ; repeat 4 times, until bit marker is out
+        inc     d               ; add 128 to DE
+        srl     d               ; retrieve fourth bit from D
+offend: rr      e               ; insert fourth bit into E
+        ex      (sp), hl        ; store source, restore destination
+        ex      de, hl          ; destination from HL to DE
+        adc     hl, de          ; HL = destination + offset + 1
+        lddr
+exitdz: pop     hl              ; restore source address (compressed data)
+        jr      nc, mainlo      ; end of loop. exit with getbit instead ret (-1 byte)
+
+getbit: add     a, a            ; check next bit
+        ret     nz              ; no more bits left?
+        ld      a, (hl)         ; load another group of 8 bits
+        dec     hl
+        adc     a, a
+        ret
+

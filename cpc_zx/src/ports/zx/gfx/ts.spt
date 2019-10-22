@@ -1,0 +1,36 @@
+# Creates the full tileset to be preloaded at the main binary.
+# Exports a set of tilemaps and related metadata
+
+reset patterns
+reset tmaps
+
+# Font, 64 patterns
+
+open font.png
+charset 0, 0, 32, 2
+
+# Fixed screens
+
+open title.png
+nametablerle
+output nametable ../bin/title.nam.bin
+output nametablerle ../bin/title.rle.bin
+
+open hud.png
+nametablerle
+output nametable ../bin/hud.nam.bin
+output nametablerle ../bin/hud.rle.bin
+
+open ending.png
+nametablerle
+output nametable ../bin/ending.nam.bin
+output nametablerle ../bin/ending.rle.bin
+
+# Metatileset (s)
+
+# Not here. Different per level
+
+# Done
+
+stats
+output patterns ../bin/ts.bin

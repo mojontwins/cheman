@@ -1,0 +1,29 @@
+# ports/cpc/gfx/cell_pointers.spt
+# Script to calculate cell pointers
+# Mega Meghan
+
+comment 12 cells for the main player, 2x3
+pointer ss_main
+12, 2, 3
+
+comment Empty cell, 2x3
+pointer ss_empty
+1, 2, 3
+
+comment 6 cells for the enemies, 2x3
+pointer ss_enems
+6, 2, 3
+
+comment 2 cells for the platform & explosion, 2x3
+pointer ss_extra
+2, 2, 3
+
+comment 1 cell for the custom pumpkin, 2x2
+pointer ss_pumpkin
+1, 2, 2
+
+comment 1 cell for the bullet, 1x1
+pointer ss_small
+1, 1, 1
+
+# Total number of array entries should be 22

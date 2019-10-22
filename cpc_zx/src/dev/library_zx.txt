@@ -1,0 +1,13 @@
+level0/map.c.bin
+level0/locks.c.bin
+level0/enems.c.bin
+level0/hotspots.c.bin
+level0/ts.patterns.c.bin
+level0/ts.tilemaps.c.bin
+level0/behs.c.bin
+level1/map.c.bin
+level1/enems.c.bin
+level1/hotspots.c.bin
+level1/ts.patterns.c.bin
+level1/ts.tilemaps.c.bin
+level1/behs.c.bin

@@ -1,0 +1,78 @@
+CPCDiskXP v2.5.1 - www.cpcmania.com
+=================================
+
+Dieses Programm kann auch mittels Kommandozeile bedient werden, um das Erstellen von DSK's in .BAT Dateien zu ermöglichen.
+Diese Funktion ist für Personen wichtig, die Programme für den CPC erstellen.
+
+Optionen:
+---------
+
+-File BinaryName
+Zeigt den Namen der zu benutzenden Binär-Datei an
+
+-AddAmsdosHeader MemoryAddressInHex
+Optional, um einen Amsdos Datei-Header anzufügen
+
+-AmsdosEntryAddress MemoryAddressInHex
+Optional, ohne Angabe dieses Parameters wird der Wert aus -AddAmsdosHeader benutzt.
+Der Wert der EntryAddress entspricht dann dem Wert in -AddAmsdosHeader
+
+-AddToExistingDsk DskFileName
+Fügt die Datei mit dem Namen "-File" in eine DSK Datei mit dem Namen DskFileName ein.
+Wenn die Datei in der DSK Datei bereits existiert, dann wird die alte Datei überschrieben.
+
+-AddToNewDsk DskFileName
+Optional, erstelle eine neue DSK Datei und integriert die Binär-Datei "-File"
+
+-NewDskFormat FormatNumber
+Optional, wurde "-AddToNewDsk" benutzt, dann wird hier das Format der Diskette angezeigt bzw. geändert.
+Das Standart-Format ist hier "1".
+
+Mögliche Format-Werte:
+----------------------
+ 1 "CPC DATA - Single Side - 40 Tracks - 64 Dir. Entries - 180K (178K Free)"
+ 2 "CPC DATA - Double Side - 40 Tracks - 64 Dir. Entries - 360K  (178K Free each side)"
+ 3 "CPC SYSTEM - Single Side - 40 Tracks - 64 Dir. Entries - 180K (169K Free)"
+ 4 "CPC SYSTEM - Double Side - 40 Tracks - 64 Dir. Entries - 360K  (169K Free each side)"
+ 5 "PARADOS 41 - Single Side - 41 Tracks - 64 Dir. Entries - 205K  (203K Free)"
+ 6 "PARADOS 40D - Double Side - 40 Tracks - 128 Dir. Entries - 400K  (396K Free)"
+ 7 "PARADOS 80 - Single Side - 80 Tracks - 128 Dir. Entries - 400K  (396K Free)"
+ 8 "ROMDOS D1 - Double Side - 80 Tracks - 128 Dir. Entries - 720K  (716K Free)"
+ 9 "ROMDOS D2 - Double Side - 80 Tracks - 256 Dir. Entries - 720K  (712K Free)"
+10 "ROMDOS D10 - Double Side - 80 Tracks - 128 Dir. Entries - 800K  (796K Free)"
+11 "ROMDOS D20 - Double Side - 80 Tracks - 256 Dir. Entries - 800K  (792K Free)"
+13 "PCW/+3DOS - Single Side - 40 Tracks - 32 Dir. Entries - 200K (194K Free)"
+14 "PCW/+3DOS - Double Side - 40 Tracks - 64 Dir. Entries - 400K (392K Free)"
+15 "PCW/+3DOS - Double Side - 42 Tracks - 64 Dir. Entries - 420K (412K Free)"
+16 "PCW/+3DOS - Double Side - 80 Tracks - 64 Dir. Entries - 720K (712K Free)"
+17 "PCW/+3DOS - Double Side - 80 Tracks - 128 Dir. Entries - 800K (788K Free)"
+18 "PCW/+3DOS - Double Side - 84 Tracks - 128 Dir. Entries - 840K (828K Free)"
+19 "PCW/+3DOS - Double Side - 86 Tracks - 128 Dir. Entries - 860K (848K Free)"
+20 "PCW/+3DOS - Double Side - 90 Tracks - 128 Dir. Entries - 900K (888K Free)"
+21 "VORTEX - Double Side - 80 Tracks - 128 Dir. Entries - 720K  (704K Free)"
+22 "IBM - Single Side - 40 Tracks - 64 Dir. Entries - 160K  (156K Free)"
+23 "IBM - Single Side - 42 Tracks - 64 Dir. Entries - 168K  (162K Free"
+24 "IBM - Single Side - 65 Tracks - 64 Dir. Entries - 260K  (254K Free)"
+25 "CPC DATA - Single Side - 57 Tracks - 64 Dir. Entries - 256K (254K Free)"
+26 "CPC SYSTEM - Single Side - 59 Tracks - 64 Dir. Entries - 265K (254K Free)"
+27 "ROMDOS D1 - Double Side - 80 Tracks - 128 Dir. Entries - 720K  (716K Free) [USB Floppy]"
+
+
+Beispiele:
+----------
+
+-Addiere Amsdos Header zu einer Datei (ohne DSK):
+CPCDiskXP -File Test.bin -AddAmsdosHeader 6000
+
+-Addiere Datei in eine neue DSK Datei:
+CPCDiskXP -File Test.bin -AddToNewDsk Test.dsk
+
+-Addiere Amsdos Header zu einer Datei. Und schreibe diese Datei in eine neue DSK Datei:
+CPCDiskXP -File Test.bin -AddAmsdosHeader 6000 -AddToNewDsk Test.dsk
+
+-Addiere Date in eine neue DSK Datei mit PARADOS 80 Format:
+CPCDiskXP -File Test.bin -AddToNewDsk Test.dsk -NewDskFormat 7
+
+-Addiere Datei in eine bereits existierende DSK Datei:
+CPCDiskXP -File Test.bin -AddToExistingDsk Test.dsk
+
